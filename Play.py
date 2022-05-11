@@ -25,12 +25,9 @@ else:
 print("Play will be start in " + str(sleep_time) + " seconds")
 time.sleep(sleep_time)
 
-for event in mid.play():
-        event = event.dict()
-        print(event)
-        if event['type'] == 'note_on':
-                if event['note'] in keys:
-                        pydirectinput.press(keys[event['note']])
-
+for msg in mid.play():
+        if msg.type == 'note_on':
+                if msg.note in keys:
+                        pydirectinput.press(keys[msg.note])
 
 print("Play ends")
