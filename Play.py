@@ -1,6 +1,6 @@
-import mido
 import time
 import pydirectinput; pydirectinput.PAUSE=0
+import mido
 import tkinter
 from tkinter import filedialog
 
@@ -12,22 +12,22 @@ root = tkinter.Tk()
 root.withdraw()
 filepath = filedialog.askopenfilename()
 try:
-	mid = mido.MidiFile(filepath)
+    mid = mido.MidiFile(filepath)
 except:
-	print("The file error")
-	quit()
+    print("The file error")
+    quit()
 
 sleep_time = str(input("Sleep time(s) (default: 1)"))
 if sleep_time == "":
-        sleep_time = int(1)
+    sleep_time = int(1)
 else:
     sleep_time = int(sleep_time)
 print("Play will be start in " + str(sleep_time) + " seconds")
 time.sleep(sleep_time)
 
 for msg in mid.play():
-        if msg.type == 'note_on':
-                if msg.note in keys:
-                        pydirectinput.press(keys[msg.note])
+    if msg.type == 'note_on':
+        if msg.note in keys:
+            pydirectinput.press(keys[msg.note])
 
 print("Play ends")
