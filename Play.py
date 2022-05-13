@@ -12,7 +12,7 @@ root = tkinter.Tk()
 root.withdraw()
 filepath = filedialog.askopenfilename()
 
-speed = str(input("Input play speed(x) (default: 1.0(x))"))
+speed = str(input("Input play speed(x) (default: 1.0)"))
 if speed == "":
     speed = float(1)
 else:
