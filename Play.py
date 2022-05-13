@@ -11,8 +11,36 @@ keys = {48: 'z', 50: 'x', 52: 'c', 53: 'v', 55: 'b', 57: 'n', 59: 'm',
 root = tkinter.Tk()
 root.withdraw()
 filepath = filedialog.askopenfilename()
+
+speed = str(input("Input play speed (default: 1)"))
+if speed == "":
+    speed = float(1)
+else:
+    speed = float(speed)
+
+class MyMidiFile(mido.MidiFile):
+    
+    def play(self, meta_messages=False, speed=1):
+        start_time = time.time()
+        input_time = 0.0
+
+        for msg in self:
+            input_time += msg.time / speed
+
+            playback_time = time.time() - start_time
+            duration_to_next_event = input_time - playback_time
+
+            if duration_to_next_event > 0.0:
+                time.sleep(duration_to_next_event)
+
+            if isinstance(msg, mido.MetaMessage) and not meta_messages:
+                continue
+            else:
+                yield msg
+
+
 try:
-    mid = mido.MidiFile(filepath)
+    mid = MyMidiFile(filepath)
 except:
     print("The file error")
     quit()
@@ -25,7 +53,7 @@ else:
 print("Play will be start in " + str(sleep_time) + " seconds")
 time.sleep(sleep_time)
 
-for msg in mid.play():
+for msg in mid.play(speed=speed):
     if msg.type == 'note_on':
         if msg.note in keys:
             pydirectinput.press(keys[msg.note])
