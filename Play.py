@@ -1,6 +1,7 @@
 import time
 import pydirectinput; pydirectinput.PAUSE=0
 import mido
+import util
 import tkinter
 from tkinter import filedialog
 
@@ -38,12 +39,33 @@ class MyMidiFile(mido.MidiFile):
             else:
                 yield msg
 
-
 try:
     mid = MyMidiFile(filepath)
 except:
     print("The file error")
     quit()
+
+tracks = []
+type = ['note_on','note_off']
+for i,track in enumerate(mid.tracks):
+    print(f'Track {i}')
+    for msg in track:
+        info = msg.dict()
+        if (info['type'] in type):
+            if info['type'] == 'note_on':
+                tracks.append(info)
+
+shift = 0
+while shift == 0:
+    auto_tune = input("Turn on automatic transposition? (0/1) (default: 0)")
+    if auto_tune == "1":
+        shift, score = util.get_shift_best_match(tracks)
+        print("transposition: ", shift)
+        print("hit: ", f'{score:.2%}')
+        break
+    elif auto_tune == "0" or auto_tune == "":
+        shift = 0
+        break
 
 sleep_time = str(input("Sleep time(s) (default: 1)"))
 if sleep_time == "":
@@ -56,6 +78,6 @@ time.sleep(sleep_time)
 for msg in mid.play(speed=speed):
     if msg.type == 'note_on':
         if msg.note in keys:
-            pydirectinput.press(keys[msg.note])
+            pydirectinput.press(keys[msg.note+shift])
 
 print("Play ends")
