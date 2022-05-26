@@ -67,9 +67,9 @@ while shift == 0:
         shift = 0
         break
 
-sleep_time = str(input("Sleep time(s) (default: 1)"))
+sleep_time = str(input("Sleep time(s) (default: 2)"))
 if sleep_time == "":
-    sleep_time = int(1)
+    sleep_time = int(2)
 else:
     sleep_time = int(sleep_time)
 print("Play will be start in " + str(sleep_time) + " seconds")
@@ -77,7 +77,7 @@ time.sleep(sleep_time)
 
 for msg in mid.play(speed=speed):
     if msg.type == 'note_on':
-        if msg.note in keys:
+        if msg.note+shift in keys:
             pydirectinput.press(keys[msg.note+shift])
 
 print("Play ends")
