@@ -1,7 +1,7 @@
 import time
 import pydirectinput; pydirectinput.PAUSE=0
 import mido
-import Util
+import util
 import tkinter
 from tkinter import filedialog
 
