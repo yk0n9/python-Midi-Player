@@ -5,9 +5,12 @@ import util
 import tkinter
 from tkinter import filedialog
 
-keys = {48: 'z', 50: 'x', 52: 'c', 53: 'v', 55: 'b', 57: 'n', 59: 'm',
+keys = {24: 'z', 26: 'x', 28: 'c', 29: 'v', 31: 'b', 33: 'n', 35: 'm',
+        36: 'z', 38: 'x', 40: 'c', 41: 'v', 43: 'b', 45: 'n', 47: 'm',
+        48: 'z', 50: 'x', 52: 'c', 53: 'v', 55: 'b', 57: 'n', 59: 'm',
         60: 'a', 62: 's', 64: 'd', 65: 'f', 67: 'g', 69: 'h', 71: 'j',
-        72: 'q', 74: 'w', 76: 'e', 77: 'r', 79: 't', 81: 'y', 83: 'u'}
+        72: 'q', 74: 'w', 76: 'e', 77: 'r', 79: 't', 81: 'y', 83: 'u',
+        84: 'q', 86: 'w', 88: 'e', 89: 'r', 91: 't', 93: 'y', 95: 'u'}
 
 root = tkinter.Tk()
 root.withdraw()
@@ -57,11 +60,11 @@ for i,track in enumerate(mid.tracks):
 
 shift = 0
 while shift == 0:
-    auto_tune = input("Turn on automatic transposition? (0/1) (default: 0)")
+    auto_tune = input("Turn on automatic transposition ? (0/1) (default: 0)")
     if auto_tune == "1":
         shift, score = util.get_shift_best_match(tracks)
-        print("transposition: ", shift)
-        print("hit: ", f'{score:.2%}')
+        print("Transposition: ", shift)
+        print("Hit: ", f'{score:.2%}')
         break
     elif auto_tune == "0" or auto_tune == "":
         shift = 0
