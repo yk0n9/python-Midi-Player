@@ -1,10 +1,11 @@
 import time
-import pydirectinput; pydirectinput.PAUSE=0
+import pydirectinput
 import mido
 import util
 import tkinter
 from tkinter import filedialog
 
+pydirectinput.PAUSE=0
 keys = {24: 'z', 26: 'x', 28: 'c', 29: 'v', 31: 'b', 33: 'n', 35: 'm',
         36: 'z', 38: 'x', 40: 'c', 41: 'v', 43: 'b', 45: 'n', 47: 'm',
         48: 'z', 50: 'x', 52: 'c', 53: 'v', 55: 'b', 57: 'n', 59: 'm',
