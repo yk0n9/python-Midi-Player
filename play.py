@@ -90,6 +90,8 @@ class Play(Thread):
             print("Please press \"Space\" to start playback")
             print()
             print("Please press \"Tab\" to stop playback")
+            print()
+            print("Please press \"Shift\" to stop playback and reselect the file")
 
             while True:
                 if self.go:
@@ -110,6 +112,8 @@ def main():
     def onRelease(key):
         if key == Key.space:
             playing.go = True
+        elif key == Key.shift:
+            playing.go = False
         elif key == Key.tab:
             playing.go = False
             playing.Exit = True
