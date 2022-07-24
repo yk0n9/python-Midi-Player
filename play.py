@@ -106,7 +106,6 @@ class Play(Thread):
                         pydirectinput.press(keys[msg.note+shift])
 
             print("Play ends")
-            os._exit(0)
 
 def main():
     playing = Play()
