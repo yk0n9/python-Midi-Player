@@ -3,6 +3,9 @@ import pydirectinput
 import mido
 import util
 import tkinter
+import sys
+from threading import Thread
+from pynput.keyboard import Listener, Key
 from tkinter import filedialog
 
 pydirectinput.PAUSE=0
@@ -12,16 +15,6 @@ keys = {24: 'z', 26: 'x', 28: 'c', 29: 'v', 31: 'b', 33: 'n', 35: 'm',
         60: 'a', 62: 's', 64: 'd', 65: 'f', 67: 'g', 69: 'h', 71: 'j',
         72: 'q', 74: 'w', 76: 'e', 77: 'r', 79: 't', 81: 'y', 83: 'u',
         84: 'q', 86: 'w', 88: 'e', 89: 'r', 91: 't', 93: 'y', 95: 'u'}
-
-root = tkinter.Tk()
-root.withdraw()
-filepath = filedialog.askopenfilename()
-
-speed = str(input("Input play speed(x) (default: 1.0)"))
-if speed == "":
-    speed = float(1)
-else:
-    speed = float(speed)
 
 class MyMidiFile(mido.MidiFile):
     
@@ -43,45 +36,89 @@ class MyMidiFile(mido.MidiFile):
             else:
                 yield msg
 
-try:
-    mid = MyMidiFile(filepath)
-except:
-    print("The file error")
-    quit()
 
-tracks = []
-type = ['note_on','note_off']
-for i,track in enumerate(mid.tracks):
-    print(f'Track {i}')
-    for msg in track:
-        info = msg.dict()
-        if (info['type'] in type):
-            if info['type'] == 'note_on':
-                tracks.append(info)
+class Play(Thread):
 
-shift = 0
-while shift == 0:
-    auto_tune = input("Turn on automatic transposition ? (0/1) (default: 0)")
-    if auto_tune == "1":
-        shift, score = util.get_shift_best_match(tracks)
-        print("Transposition: ", shift)
-        print("Hit: ", f'{score:.2%}')
-        break
-    elif auto_tune == "0" or auto_tune == "":
-        shift = 0
-        break
+    Exit = False
+    go = False
 
-sleep_time = str(input("Sleep time(s) (default: 2)"))
-if sleep_time == "":
-    sleep_time = int(2)
-else:
-    sleep_time = int(sleep_time)
-print("Play will be start in " + str(sleep_time) + " seconds")
-time.sleep(sleep_time)
+    def __init__(self):
+        Thread.__init__(self)
 
-for msg in mid.play(speed=speed):
-    if msg.type == 'note_on':
-        if msg.note+shift in keys:
-            pydirectinput.press(keys[msg.note+shift])
+    def run(self):
+        while not self.Exit:
+            root = tkinter.Tk()
+            root.withdraw()
+            filepath = filedialog.askopenfilename()
 
-print("Play ends")
+            try:
+                mid = MyMidiFile(filepath)
+            except:
+                print("The file error")
+                quit()
+
+            tracks = []
+            type = ['note_on','note_off']
+            for i,track in enumerate(mid.tracks):
+                print(f'Track {i}')
+                for msg in track:
+                    info = msg.dict()
+                if (info['type'] in type):
+                    if info['type'] == 'note_on':
+                        tracks.append(info)
+
+            speed = str(input("Input play speed(x) (default: 1.0)"))
+            if speed == "":
+                speed = float(1)
+            else:
+                speed = float(speed)
+
+            shift = 0
+            while shift == 0:
+                auto_tune = input("Turn on automatic transposition ? (0/1) (default: 0)")
+                if auto_tune == "1":
+                    shift, score = util.get_shift_best_match(tracks)
+                    print("Transposition: ", shift)
+                    print("Hit: ", f'{score:.2%}')
+                    break
+                elif auto_tune == "0" or auto_tune == "":
+                    shift = 0
+                    break
+
+
+            print()
+            print("Please press \"Space\" to start playback")
+            print()
+            print("Please press \"Tab\" to stop playback")
+
+            while True:
+                if self.go:
+                    break
+
+            for msg in mid.play(speed=speed):
+                if not self.go:
+                    break
+                if msg.type == 'note_on':
+                    if msg.note+shift in keys:
+                        pydirectinput.press(keys[msg.note+shift])
+
+            print("Play ends")
+
+def main():
+    playing = Play()
+    playing.start()
+    def onRelease(key):
+        if key == Key.space:
+            playing.go = True
+        elif key == Key.tab:
+            playing.go = False
+            playing.Exit = True
+            sys.exit(0)
+    with Listener(
+        on_press = (),
+        on_release = onRelease
+        ) as listener:
+        listener.join()
+
+if __name__ == '__main__':
+    main()
