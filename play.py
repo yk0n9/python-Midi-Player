@@ -55,7 +55,7 @@ class Play(Thread):
                 mid = MyMidiFile(filepath)
             except:
                 print("The file error")
-                quit()
+                sys.exit(0)
 
             tracks = []
             type = ['note_on','note_off']
