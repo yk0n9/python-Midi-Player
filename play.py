@@ -4,6 +4,7 @@ import mido
 import util
 import tkinter
 import sys
+import os
 from threading import Thread
 from pynput.keyboard import Listener, Key
 from tkinter import filedialog
@@ -55,7 +56,7 @@ class Play(Thread):
                 mid = MyMidiFile(filepath)
             except:
                 print("The file error")
-                sys.exit(0)
+                os._exit(0)
 
             tracks = []
             type = ['note_on','note_off']
@@ -105,6 +106,7 @@ class Play(Thread):
                         pydirectinput.press(keys[msg.note+shift])
 
             print("Play ends")
+            os._exit(0)
 
 def main():
     playing = Play()
