@@ -9,17 +9,13 @@ from threading import Thread
 from pynput.keyboard import Listener, Key
 from tkinter import filedialog
 
-pydirectinput.PAUSE=0
-keys = {24: 'z', 26: 'x', 28: 'c', 29: 'v', 31: 'b', 33: 'n', 35: 'm',
-        36: 'z', 38: 'x', 40: 'c', 41: 'v', 43: 'b', 45: 'n', 47: 'm',
-        48: 'z', 50: 'x', 52: 'c', 53: 'v', 55: 'b', 57: 'n', 59: 'm',
-        60: 'a', 62: 's', 64: 'd', 65: 'f', 67: 'g', 69: 'h', 71: 'j',
-        72: 'q', 74: 'w', 76: 'e', 77: 'r', 79: 't', 81: 'y', 83: 'u',
-        84: 'q', 86: 'w', 88: 'e', 89: 'r', 91: 't', 93: 'y', 95: 'u'}
+pydirectinput.PAUSE = 0
+keys = util.mapping
+
 
 class MyMidiFile(mido.MidiFile):
-    
-    def play(self, meta_messages=False, speed=1):
+
+    def play(self, meta_messages=False, speed=1.0):
         start_time = time.time()
         input_time = 0.0
 
@@ -39,7 +35,6 @@ class MyMidiFile(mido.MidiFile):
 
 
 class Play(Thread):
-
     Exit = False
     go = False
 
@@ -47,6 +42,7 @@ class Play(Thread):
         Thread.__init__(self)
 
     def run(self):
+
         while not self.Exit:
             root = tkinter.Tk()
             root.withdraw()
@@ -55,18 +51,18 @@ class Play(Thread):
             try:
                 mid = MyMidiFile(filepath)
             except:
-                print("The file error")
+                print("file error")
                 os._exit(0)
 
             tracks = []
-            type = ['note_on','note_off']
-            for i,track in enumerate(mid.tracks):
+            node_type = ['note_on', 'note_off']
+            for i, track in enumerate(mid.tracks):
                 print(f'Track {i}')
                 for msg in track:
                     info = msg.dict()
-                if (info['type'] in type):
-                    if info['type'] == 'note_on':
-                        tracks.append(info)
+                    if info['type'] in node_type:
+                        if info['type'] == 'note_on':
+                            tracks.append(info)
 
             speed = str(input("Input play speed(x) (default: 1.0)"))
             if speed == "":
@@ -86,7 +82,6 @@ class Play(Thread):
                     shift = 0
                     break
 
-
             print()
             print("Please press \"Space\" to start playback")
             print()
@@ -98,19 +93,20 @@ class Play(Thread):
                 if self.go:
                     break
 
-            for msg in mid.play(speed=speed):
+            for msg in mid.play(speed=float(speed)):
                 if not self.go:
                     break
-                if msg.type == 'note_on':
-                    if msg.note+shift in keys:
-                        pydirectinput.press(keys[msg.note+shift])
+                if msg.type == 'note_on' and msg.note + shift in keys:
+                    pydirectinput.press(keys[msg.note + shift])
 
             print("Play ends")
             self.go = False
 
+
 def main():
     playing = Play()
     playing.start()
+
     def onRelease(key):
         if key == Key.space:
             playing.go = True
@@ -120,11 +116,13 @@ def main():
             playing.go = False
             playing.Exit = True
             sys.exit(0)
+
     with Listener(
-        on_press = (),
-        on_release = onRelease
-        ) as listener:
+            on_press=(),
+            on_release=onRelease
+    ) as listener:
         listener.join()
+
 
 if __name__ == '__main__':
     main()
