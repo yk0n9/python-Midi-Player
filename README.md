@@ -1,4 +1,4 @@
-# Python-Genshin_Lyre_Midi_Player
+# python-Midi_Player
 ## 适配各种MIDI
 
 python play.py
