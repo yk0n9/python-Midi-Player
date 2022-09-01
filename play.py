@@ -1,6 +1,10 @@
+from __future__ import print_function
+import ctypes
 import time
 import pydirectinput
 import mido
+from future.types.newbytes import unicode
+
 import util
 import tkinter
 import sys
@@ -13,30 +17,10 @@ pydirectinput.PAUSE = 0
 keys = util.mapping
 
 
-class MyMidiFile(mido.MidiFile):
-
-    def play(self, meta_messages=False, speed=1.0):
-        start_time = time.time()
-        input_time = 0.0
-
-        for msg in self:
-            input_time += msg.time / speed
-
-            playback_time = time.time() - start_time
-            duration_to_next_event = input_time - playback_time
-
-            if duration_to_next_event > 0.0:
-                time.sleep(duration_to_next_event)
-
-            if isinstance(msg, mido.MetaMessage) and not meta_messages:
-                continue
-            else:
-                yield msg
-
-
 class Play(Thread):
     Exit = False
     go = False
+    speed = 1.0
 
     def __init__(self):
         Thread.__init__(self)
@@ -49,12 +33,12 @@ class Play(Thread):
             filepath = filedialog.askopenfilename()
 
             try:
-                mid = MyMidiFile(filepath)
+                mid = mido.MidiFile(filepath)
             except:
                 print("file error")
                 os._exit(0)
 
-            tracks = []
+            messages = []
             node_type = ['note_on', 'note_off']
             for i, track in enumerate(mid.tracks):
                 print(f'Track {i}')
@@ -62,19 +46,19 @@ class Play(Thread):
                     info = msg.dict()
                     if info['type'] in node_type:
                         if info['type'] == 'note_on':
-                            tracks.append(info)
+                            messages.append(info)
 
             speed = str(input("Input play speed(x) (default: 1.0)"))
             if speed == "":
-                speed = float(1)
+                self.speed = float(1.0)
             else:
-                speed = float(speed)
+                self.speed = float(speed)
 
             shift = 0
             while shift == 0:
                 auto_tune = input("Turn on automatic transposition ? (0/1) (default: 0)")
                 if auto_tune == "1":
-                    shift, score = util.get_shift_best_match(tracks)
+                    shift, score = util.get_shift_best_match(messages)
                     print("Transposition: ", shift)
                     print("Hit: ", f'{score:.2%}')
                     break
@@ -88,17 +72,32 @@ class Play(Thread):
             print("Please press \"Tab\" to stop playback")
             print()
             print("Please press \"Shift\" to stop playback and reselect the file")
+            print()
+            print("Press ↑ to speed up 0.1x")
+            print()
+            print("Press ↓ to speed down 0.1x")
+            print()
 
             while True:
                 if self.go:
                     break
 
-            for msg in mid.play(speed=float(speed)):
+            start_time = time.time()
+            input_time = 0.0
+            for msg in mid:
                 if not self.go:
                     break
+
+                input_time += msg.time / self.speed
+
+                playback_time = time.time() - start_time
+                duration_to_next_event = input_time - playback_time
+
+                if duration_to_next_event > 0.0:
+                    time.sleep(duration_to_next_event)
+
                 if msg.type == 'note_on' and msg.note + shift in keys:
                     pydirectinput.press(keys[msg.note + shift])
-
             print("Play ends")
             self.go = False
 
@@ -112,6 +111,14 @@ def main():
             playing.go = True
         elif key == Key.shift:
             playing.go = False
+        elif key == Key.up:
+            playing.speed += 0.1
+            print("Playback speed is", f'{playing.speed:.1f}')
+            print()
+        elif key == Key.down:
+            playing.speed -= 0.1
+            print("Playback speed is", f'{playing.speed:.1f}')
+            print()
         elif key == Key.tab:
             playing.go = False
             playing.Exit = True
@@ -125,4 +132,16 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    def is_admin():
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+
+
+    if is_admin():
+        main()
+    else:
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+
+
