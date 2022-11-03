@@ -1,4 +1,4 @@
-# python-Midi_Player
+# python-Midi-Player
 ## 适配各种MIDI
 
 python play.py
