@@ -11,6 +11,7 @@ mapping_keys = list(mapping.keys())
 for key in mapping_keys:
     mapping_vector[key] = 1  # higher pitch should be assigned more weight?
 
+
 def note_density(track):
     density_vector = np.zeros([128])
     # for note in track:
@@ -19,23 +20,25 @@ def note_density(track):
         density_vector[note["note"]] += 1
     return density_vector
 
+
 def calculate_match(track, mapping_vec):
     track_note_density = note_density(track)
     match_ratio = np.dot(track_note_density, mapping_vec) / np.sum(track_note_density)
     return match_ratio
 
-def get_shift_best_match(track, bounds=[-21,21]):
+
+def get_shift_best_match(track, bounds=None):
+    if bounds is None:
+        bounds = [-21, 21]
     best_shift = 0
     best_match = 0
     for shift in range(*bounds):
         shifted_keys = [k + shift for k in mapping_keys]
         shifted_mapping = np.zeros([128])
-        for key in shifted_keys:
-            shifted_mapping[key] = 1  # higher pitch should be assigned more weight?
+        for mapping_key in shifted_keys:
+            shifted_mapping[mapping_key] = 1  # higher pitch should be assigned more weight?
         match_score = calculate_match(track, shifted_mapping)
         if match_score > best_match:  # higher shift takes priority
             best_match = match_score
             best_shift = shift
     return -best_shift, best_match
-
-
